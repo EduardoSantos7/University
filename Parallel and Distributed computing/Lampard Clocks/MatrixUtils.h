@@ -10,6 +10,16 @@ void print(int m, int n, char* arr[][n]){
     }
 }
 
+void printInt(int m, int n, int arr[][n]){
+    int i, j;
+    for(i = 0; i < m; i++){
+        for(j = 0; j < n; j++){
+            printf("%d ", arr[i][j]);
+        }
+        printf("\n");
+    }
+}
+
 void replace(char* old_value, char* new_value, int m, int n, char* arr[m][n]){
     int i, j;
     for(i = 0; i < m; i++){
