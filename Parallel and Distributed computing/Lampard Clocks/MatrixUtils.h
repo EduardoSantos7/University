@@ -57,3 +57,15 @@ int* indexes(int target, int m, int n, char* arr[][n], int avoidRow){
 
     return output;
 }
+
+void nums_to_internal(int m, int n, char* arr[m][n]){
+    int i, j;
+    for(i = 0; i < m; i++){
+        for(j = 0; j < n; j++){
+            if (*arr[i][j] > 48 && *arr[i][j] < 58){
+                arr[i][j] = "I";
+            }
+            
+        }
+    }
+}

@@ -50,6 +50,7 @@ void verify(int m, int n, char* arr[m][n]){
     }
 
     int counter = 1;
+    int flag = 1;
 
     while(!is_empty(receives_stack)){
         struct StackNode* elem = pop(receives_stack);
@@ -62,6 +63,7 @@ void verify(int m, int n, char* arr[m][n]){
             int* ind = indexes(elem->value - 1, m, n, arr, elem->row);
             // // If there is no a value print invalid
             if (ind[0] == -1){
+                flag = 0;
                 printf("INVALID\n");
                 break;
             }
@@ -76,7 +78,11 @@ void verify(int m, int n, char* arr[m][n]){
 
     free(receives_stack);
 
-    print(m, n, out);
+    if(flag){
+        nums_to_internal(m, n, out);
+        replace("0", NULL, m, n, out);
+        print(m, n, out);
+    }
 
 
 }
@@ -132,8 +138,8 @@ void verify(int m, int n, char* arr[m][n]){
 int main(){
     char* in[3][4] = {
         {"1", "2", "8", "9"},
-        {"1", "3", "6", "7"},
-        {"3", "4", "5", "6"},
+        {"1", "6", "7", "0"},
+        {"2", "3", "4", "5"},
     };
     char* in2[3][4] = {
         {"s1", "b", "r3", "e"},
