@@ -3,6 +3,7 @@
 struct StackNode {
     int value;
     int row;
+    int column;
     struct StackNode* next;
 };
 
@@ -10,10 +11,11 @@ struct Stack{
     struct StackNode* top;
 };
 
-struct StackNode* createStackNode(int value, int row, struct StackNode* next){
+struct StackNode* createStackNode(int value, int row, int column, struct StackNode* next){
     struct StackNode* node = (struct StackNode*)malloc(sizeof(struct StackNode));
     node->value = value;
     node->row = row;
+    node->column = column;
     node->next = next;
     return node;
 }
@@ -24,14 +26,14 @@ struct Stack* createStack(struct StackNode* top){
     return stack;
 }
 
-void push(struct Stack* stack, int item, int row){
+void push(struct Stack* stack, int item, int row, int column){
     if(!stack->top){
         
-        struct StackNode* node = createStackNode(item, row, NULL);
+        struct StackNode* node = createStackNode(item, row, column, NULL);
         stack->top = node;
     }
     else{
-        struct StackNode* node = createStackNode(item, row, stack->top);
+        struct StackNode* node = createStackNode(item, row, column, stack->top);
         stack->top = node;
     }
 }

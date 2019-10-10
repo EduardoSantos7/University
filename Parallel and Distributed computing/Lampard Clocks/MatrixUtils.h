@@ -40,7 +40,7 @@ int* indexes(int target, int m, int n, char* arr[][n], int avoidRow){
             continue;
 
         for(j = 0; j < n; j++){
-            if (*arr[i][j] == target){
+            if (((*arr[i][j]) - 48) == target){
                 output[0] = i;
                 output[1] = j;
                 break;
