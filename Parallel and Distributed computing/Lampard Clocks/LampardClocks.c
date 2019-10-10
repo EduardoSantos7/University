@@ -132,6 +132,7 @@ void calculate(int m, int n, char* arr[m][n]){
     }
     while(!is_empty(receives_stack));
 
+    replace(NULL, "0", m, n, out);
     printInt(m,n,out);
 }
 
@@ -146,9 +147,9 @@ int main(){
         {"a", "r2", "s3", NULL},
         {"r1", "c", "d", "s2"},
     };
-    //verify(3, 4, in);
+    verify(3, 4, in);
     calculate(3, 4, in2);
-    //verify(3, 4, in);
+    verify(3, 4, in);
 
     return 0;
 }
