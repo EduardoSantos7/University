@@ -87,53 +87,53 @@ void verify(int m, int n, char* arr[m][n]){
 
 }
 
-// void calculate(int m, int n, char* arr[m][n]){
+void calculate(int m, int n, char* arr[m][n]){
 
-//     struct Stack* receives_stack = createStack(NULL);
-//     int out[m][n];
-//     int send_events[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//     int i, j, before, max_count;
+    struct Stack* receives_stack = createStack(NULL);
+    int out[m][n];
+    int send_events[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int i, j, before, max_count;
 
-//     do{
-//         struct StackNode* previous_receive = pop(receives_stack);
-//         int init_i = (previous_receive) ? previous_receive->value : 0;
-//         int init_j = (previous_receive) ? previous_receive->row : 0;
+    do{
+        struct StackNode* previous_receive = pop(receives_stack);
+        int init_i = (previous_receive) ? previous_receive->row : 0;
+        int init_j = (previous_receive) ? previous_receive->column : 0;
 
-//         for (i=init_i; i < m; i++){
-//             int count = 0;
-//             for (j=init_j; j < n; j++){
-//                 if(!arr[i][j])
-//                     continue;
-//                 /* Check if the event type is send*/
-//                 if(strncmp(arr[i][j], "s", 1) == 0){
-//                     before = (j > 0) ? out[i][j-1] : 0;
-//                     out[i][j] = before + 1;
-//                     send_events[get_event_number(arr[i][j]) - 1] = before + 1;
-//                 }
-//                 /* Check if the event type is receive*/
-//                 else if(strncmp(arr[i][j], "r", 1) == 0){
-//                     /*Check if the send event of rx is already known*/
-//                     int send = send_events[get_event_number(arr[i][j]) - 1];
-//                     if(send){
-//                         out[i][j] = send + 1;
-//                     }
-//                     else{
-//                         push(receives_stack, i, j);
-//                         break;
-//                     }
-//                 }
-//                 else{
-//                     before = (j > 0) ? out[i][j-1] : 0;
-//                     max_count = max(count++, before);
-//                     out[i][j] = max_count + 1;
-//                 }
-//             }   
-//         }
-//     }
-//     while(!is_empty(receives_stack));
+        for (i=init_i; i < m; i++){
+            int count = 0;
+            for (j=init_j; j < n; j++){
+                if(!arr[i][j])
+                    continue;
+                /* Check if the event type is send*/
+                if(strncmp(arr[i][j], "s", 1) == 0){
+                    before = (j > 0) ? out[i][j-1] : 0;
+                    out[i][j] = before + 1;
+                    send_events[get_event_number(arr[i][j]) - 1] = before + 1;
+                }
+                /* Check if the event type is receive*/
+                else if(strncmp(arr[i][j], "r", 1) == 0){
+                    /*Check if the send event of rx is already known*/
+                    int send = send_events[get_event_number(arr[i][j]) - 1];
+                    if(send){
+                        out[i][j] = send + 1;
+                    }
+                    else{
+                        push(receives_stack, 0, i, j);
+                        break;
+                    }
+                }
+                else{
+                    before = (j > 0) ? out[i][j-1] : 0;
+                    max_count = max(count++, before);
+                    out[i][j] = max_count + 1;
+                }
+            }   
+        }
+    }
+    while(!is_empty(receives_stack));
 
-//     printInt(m,n,out);
-// }
+    printInt(m,n,out);
+}
 
 int main(){
     char* in[3][4] = {
@@ -147,8 +147,8 @@ int main(){
         {"r1", "c", "d", "s2"},
     };
     //verify(3, 4, in);
-    //calculate(3, 4, in2);
-    verify(3, 4, in);
+    calculate(3, 4, in2);
+    //verify(3, 4, in);
 
     return 0;
 }
