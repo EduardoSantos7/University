@@ -64,7 +64,7 @@ void verify(int m, int n, char* arr[m][n]){
             // // If there is no a value print invalid
             if (ind[0] == -1){
                 flag = 0;
-                printf("INVALID\n");
+                printf("INCORRECT\n");
                 break;
             }
 
@@ -134,21 +134,4 @@ void calculate(int m, int n, char* arr[m][n]){
 
     replaceIntMat((int)NULL, 0, m, n, out);
     printInt(m,n,out);
-}
-
-int main(){
-    char* in[3][4] = {
-        {"1", "2", "8", "9"},
-        {"1", "6", "7", "0"},
-        {"2", "3", "4", "5"},
-    };
-    char* in2[3][4] = {
-        {"s1", "b", "r3", "e"},
-        {"a", "r2", "s3", NULL},
-        {"r1", "c", "d", "s2"},
-    };
-    verify(3, 4, in);
-    calculate(3, 4, in2);
-
-    return 0;
 }
