@@ -149,7 +149,6 @@ int main(){
     };
     verify(3, 4, in);
     calculate(3, 4, in2);
-    verify(3, 4, in);
 
     return 0;
 }
