@@ -132,7 +132,7 @@ void calculate(int m, int n, char* arr[m][n]){
     }
     while(!is_empty(receives_stack));
 
-    replace(NULL, "0", m, n, out);
+    replaceIntMat((int)NULL, 0, m, n, out);
     printInt(m,n,out);
 }
 

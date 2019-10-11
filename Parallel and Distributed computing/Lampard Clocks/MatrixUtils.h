@@ -31,6 +31,21 @@ void replace(char* old_value, char* new_value, int m, int n, char* arr[m][n]){
     }
 }
 
+void replaceIntMat(int old_value, int new_value, int m, int n, int arr[m][n])
+{
+    int i, j;
+    for (i = 0; i < m; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            if (arr[i][j] == old_value)
+            {
+                arr[i][j] = new_value;
+            }
+        }
+    }
+}
+
 int* indexes(int target, int m, int n, char* arr[][n], int avoidRow){
     int i, j;
     static int output[2] = {-1, -1};
