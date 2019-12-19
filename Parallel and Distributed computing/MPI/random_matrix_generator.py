@@ -17,7 +17,7 @@ Without args:
 With args example:
     python3 random_matrix_generator.py -n in.txt -r 10 -c 10 -s 1 -e 200
 
-Output: Create a file with the amtrix.
+Output: Create a file with the matrix.
 
 """
 
