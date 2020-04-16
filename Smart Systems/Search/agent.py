@@ -10,10 +10,11 @@ class Agent:
         DIJKSTRA = "DIJKSTRA"
         A_STAR = "A*"
 
-    def __init__(self, env, type_search=SearchTypes.BREATH_FIRST_SEARCH, render=True):
+    def __init__(self, env, type_search=SearchTypes.BREATH_FIRST_SEARCH, render=True, debug=False):
         self.env = env
         self.type_search = type_search
         self.render = render
+        self.debug = debug
 
     def process(self):
         self.env.reset()
@@ -31,6 +32,7 @@ class Agent:
         if self.render and path:
             shortest_path = self.recover_solution_path(path)
             self.draw_path(shortest_path)
+            self.traverse_shortest_path(shortest_path)
 
     def simulate_BFS(self):
 
@@ -53,7 +55,7 @@ class Agent:
             self.move_robot(node)
             self.handle_neighboors(node, path, queue)
 
-            if self.render:
+            if self.debug and self.render:
                 self.env.maze_view.update()
                 time.sleep(.1)
 
@@ -103,20 +105,10 @@ class Agent:
                 tuple(self.env.maze_view.robot)).teleport(tuple(self.env.maze_view.robot)))
         self.env.maze_view._MazeView2D__draw_robot(transparency=255)
 
-    def move_robot(self, dir, set_pos=True):
-        # update the drawing
-        self.env.maze_view._MazeView2D__draw_robot(transparency=0)
-
-        # move the robot
-        if set_pos:
-            self.env.maze_view._MazeView2D__robot = np.array(dir)
-        else:
-            self.env.maze_view._MazeView2D__robot += np.array(dir)
-        # if it's in a portal afterward
-        if self.env.maze_view.maze.is_portal(self.env.maze_view.robot):
-            self.env.maze_view._MazeView2D__robot = np.array(self.env.maze_view.maze.get_portal(
-                tuple(self.env.maze_view.robot)).teleport(tuple(self.env.maze_view.robot)))
-        self.env.maze_view._MazeView2D__draw_robot(transparency=255)
+    def traverse_shortest_path(self, shortest_path):
+        while shortest_path:
+            self.move_robot(shortest_path.popleft())
+            self.env.maze_view.update()
 
     def recover_solution_path(self, path):
         final_pos = (9, 9)
