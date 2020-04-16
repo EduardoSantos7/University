@@ -1,7 +1,4 @@
 import time
-import sys
-
-import pygame
 import gym
 import gym_maze
 import matplotlib.pyplot as plt
@@ -49,36 +46,36 @@ def test(search_type, with_portals=False, test_mem=False):
 if __name__ == "__main__":
 
     # Initialize the "maze" environment
-    # env = gym.make("maze-random-100x100-v0")
+    env = gym.make("maze-random-5x5-v0")
 
-    # agent = Agent(env, type_search=Agent.SearchTypes.A_STAR, debug=True)
+    agent = Agent(env, type_search=Agent.SearchTypes.A_STAR, debug=True)
 
-    # agent.process()
+    agent.process()
 
     # Test
-    results, _ = test(Agent.SearchTypes.BREATH_FIRST_SEARCH)
-    results_2, _ = test(Agent.SearchTypes.A_STAR)
+    # results, _ = test(Agent.SearchTypes.BREATH_FIRST_SEARCH)
+    # results_2, _ = test(Agent.SearchTypes.A_STAR)
 
-    plt.plot(list(results.keys()), list(results.values()), 'r', label="BFS")
-    plt.plot(list(results_2.keys()), list(results_2.values()), 'b', label="A*")
-    plt.xlabel('Grid Size (N)')
-    plt.ylabel('Seconds')
-    plt.legend(loc="upper left")
-    plt.grid()
-    plt.title("Time Used")
-    plt.show()
+    # plt.plot(list(results.keys()), list(results.values()), 'r', label="BFS")
+    # plt.plot(list(results_2.keys()), list(results_2.values()), 'b', label="A*")
+    # plt.xlabel('Grid Size (N)')
+    # plt.ylabel('Seconds')
+    # plt.legend(loc="upper left")
+    # plt.grid()
+    # plt.title("Time Used")
+    # plt.show()
 
-    _, memory = test(Agent.SearchTypes.BREATH_FIRST_SEARCH, test_mem=True)
-    _, memory_2 = test(Agent.SearchTypes.A_STAR, test_mem=True)
+    # _, memory = test(Agent.SearchTypes.BREATH_FIRST_SEARCH, test_mem=True)
+    # _, memory_2 = test(Agent.SearchTypes.A_STAR, test_mem=True)
 
-    plt.plot(list(memory.keys()), list(memory.values()), 'r', label="BFS")
-    plt.plot(list(memory_2.keys()), list(memory_2.values()), 'b', label="A*")
-    plt.xlabel('Grid Size (N)')
-    plt.ylabel('Memory (MiB)')
-    plt.legend(loc="upper left")
-    plt.grid()
-    plt.title("Memory Used")
-    plt.show()
+    # plt.plot(list(memory.keys()), list(memory.values()), 'r', label="BFS")
+    # plt.plot(list(memory_2.keys()), list(memory_2.values()), 'b', label="A*")
+    # plt.xlabel('Grid Size (N)')
+    # plt.ylabel('Memory (MiB)')
+    # plt.legend(loc="upper left")
+    # plt.grid()
+    # plt.title("Memory Used")
+    # plt.show()
 
     # mem_usage = memory_usage(agent2.process)
     # print('Maximum memory usage: %s' % max(mem_usage))
