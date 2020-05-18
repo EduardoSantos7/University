@@ -9,9 +9,12 @@ from QAgent import QAgent
 if __name__ == "__main__":
 
     # Initialize the "maze" environment
-    env = gym.make("maze-random-5x5-v0")
+    env = gym.make("maze-random-3x3-v0")
     agent = QAgent(env, debug=True)
-    agent.process()
+    s = time.time()
+    agent.process(episodes=15)
+    e = time.time()
+    print(f'total time: {e-s}')
 
     plt.plot(agent.rewards_per_episode, 'r', label="Q Table")
     plt.xlabel('Number of episodes')
