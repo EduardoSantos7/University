@@ -17,14 +17,13 @@ class QAgent:
         self.q_table = q_table
         self.rewards_per_episode = []
 
-    def process(self, episodes=30, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
-
         if self.render:
             # Render tha maze
             self.env.render()
 
-        self.init_q_tabe(
-            path="/q_table/3x3/e-greedy_R_0.6303703703703707_E_15.pickle")
+    def process(self, episodes=30, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
+
+        self.init_q_tabe(path="")
 
         for episode in range(episodes):
 
@@ -62,11 +61,7 @@ class QAgent:
 
             self.rewards_per_episode.append(rewards)
 
-        dimensions = f'{self.env.maze_view.goal[0] + 1}x{self.env.maze_view.goal[0] + 1}'
-        rewards = mean(self.rewards_per_episode)
-
-        with open(f"q_table/{dimensions}/{policy}_R_{rewards}_E_{episodes}_{time.time()}.pickle", "wb") as f:
-            pickle.dump(self.q_table, f)
+        self.save_q_table(policy, episodes)
 
     def init_q_tabe(self, path=None):
         # If there's a path
@@ -91,3 +86,10 @@ class QAgent:
 
         if policy == "greedy":
             return int(np.argmax(actions))
+
+    def save_q_table(self, policy, episodes):
+        dimensions = f'{self.env.maze_view.goal[0] + 1}x{self.env.maze_view.goal[0] + 1}'
+        rewards = mean(self.rewards_per_episode)
+
+        with open(f"q_table/{dimensions}/{policy}_R_{rewards}_E_{episodes}_{time.time()}.pickle", "wb") as f:
+            pickle.dump(self.q_table, f)
