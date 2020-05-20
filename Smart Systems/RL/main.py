@@ -8,7 +8,7 @@ from QAgent import QAgent
 
 
 EPISODES = 200
-GRID_SIZE = 100
+GRID_SIZE = 10
 results_per_policy = {}
 
 
