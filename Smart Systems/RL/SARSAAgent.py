@@ -8,7 +8,7 @@ import pickle
 from statistics import mean
 
 
-class QAgent:
+class SARSAAgent:
 
     def __init__(self, env, q_table="", render=True, debug=False):
         self.env = env
@@ -39,19 +39,23 @@ class QAgent:
             state = self.pos_2_vec(self.env.reset())
             done = False
             rewards = 0
+            action = self.pick_action(
+                self.q_table[state], epsilon=epsilon, policy=policy)
             while not done:
-                action = self.pick_action(self.q_table[state], epsilon=epsilon, policy=policy)
                 new_state, reward, done, info = self.env.step(action)
                 new_state = self.pos_2_vec(new_state)
                 rewards += reward
 
-                next_action = self.pick_action(self.q_table[state], policy="greedy")
+                next_action = self.pick_action(
+                    self.q_table[state], policy=policy)
                 q_value = self.q_table[state][action]
                 next_q_value = self.q_table[new_state][next_action]
 
-                self.q_table[state][action] += alpha*(reward + (gamma*next_q_value) - q_value)
+                self.q_table[state][action] += alpha * \
+                    (reward + (gamma*next_q_value) - q_value)
 
                 state = new_state
+                action = next_action
 
                 if self.debug and self.render:
                     # pp.pprint(self.q_table)
@@ -93,7 +97,8 @@ class QAgent:
             # Get a random action from a list of actions which
             # contain values greater than a random probability.
             # If the list is empty then pick a random action.
-            gradient = [i for i, num in enumerate(prob_t) if num > rand_probability]
+            gradient = [i for i, num in enumerate(
+                prob_t) if num > rand_probability]
 
             if gradient:
                 return random.choice(gradient)
@@ -104,5 +109,5 @@ class QAgent:
         dimensions = f'{self.env.maze_view.goal[0] + 1}x{self.env.maze_view.goal[0] + 1}'
         rewards = mean(self.rewards_per_episode)
 
-        with open(f"q_table/q_learning/{dimensions}/{policy}_E_{episodes}.pickle", "wb") as f:
+        with open(f"q_table/sarsa/{dimensions}/{policy}_E_{episodes}.pickle", "wb") as f:
             pickle.dump(self.q_table, f)
