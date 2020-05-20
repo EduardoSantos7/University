@@ -21,7 +21,7 @@ class QAgent:
             # Render tha maze
             self.env.render()
 
-    def process(self, episodes=30, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
+    def process(self, episodes=2, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
 
         self.init_q_tabe(path="")
 
@@ -61,7 +61,7 @@ class QAgent:
 
             self.rewards_per_episode.append(rewards)
 
-        self.save_q_table(policy, episodes)
+        # self.save_q_table(policy, episode)
 
     def init_q_tabe(self, path=None):
         # If there's a path
@@ -87,9 +87,24 @@ class QAgent:
         if policy == "greedy":
             return int(np.argmax(actions))
 
+        if policy == "soft_max":
+            prob_t = [np.exp(q_value/epsilon) for q_value in actions]
+            prob_t = np.true_divide(prob_t, sum(prob_t))
+            rand_probability = random.random()
+            # Get a random action from a list of actions which
+            # contain values greater than a random probability.
+            # If the list is empty then pick a random action.
+            gradient = [i for i, num in enumerate(
+                prob_t) if num > rand_probability]
+
+            if gradient:
+                return random.choice([i for i, num in enumerate(prob_t) if num > rand_probability])
+            
+            return random.randint(0, len(actions) - 1)
+
     def save_q_table(self, policy, episodes):
         dimensions = f'{self.env.maze_view.goal[0] + 1}x{self.env.maze_view.goal[0] + 1}'
         rewards = mean(self.rewards_per_episode)
 
-        with open(f"q_table/{dimensions}/{policy}_R_{rewards}_E_{episodes}_{time.time()}.pickle", "wb") as f:
+        with open(f"q_table/{dimensions}/{policy}_E_{episodes}.pickle", "wb") as f:
             pickle.dump(self.q_table, f)
