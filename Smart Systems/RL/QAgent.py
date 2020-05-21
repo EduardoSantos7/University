@@ -23,7 +23,7 @@ class QAgent:
 
     def process(self, episodes=2, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
 
-        self.init_q_tabe(path="")
+        self.init_q_tabe(path="q_table/q_learning/3x3/greedy_E_1999.pickle")
 
         for episode in range(episodes):
 
@@ -64,7 +64,8 @@ class QAgent:
 
     def init_q_tabe(self, path=None):
         # If there's a path
-        if self.q_table:
+        if path:
+            print("entre al if")
             with open(path, "rb") as f:
                 self.q_table = pickle.load(f)
         else:
