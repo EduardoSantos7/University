@@ -1,1 +1,5 @@
 *.pickle
+*.pyc
+*.jpg
+*.jpeg
+*.png
