@@ -8,8 +8,8 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed, wait
 
 
-def get_license_plate():
-    image = cv2.imread('toyota.jpg')
+def get_license_plate(image_path):
+    image = cv2.imread(image_path)
     image = cv2.resize(image, (800, 800))
     gray, canny = Preprocessor.gray_blur_canny(image)
     text_freq = {}
@@ -46,10 +46,3 @@ def get_license_plate():
 
 def orc(image, psm):
     return pytesseract.image_to_string(image, config=psm)
-
-
-s = time.time()
-get_license_plate()
-e = time.time()
-
-print(e - s)
