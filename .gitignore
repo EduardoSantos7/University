@@ -3,3 +3,7 @@
 *.jpg
 *.jpeg
 *.png
+*.mp4
+*.DS_Store
+*.log
+*.tar*

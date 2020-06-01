@@ -40,8 +40,6 @@ class Crawler:
 
         self.driver.find_element_by_xpath(self.XPATHS['submit_button']).click()
 
-        time.sleep(10)
-
         html = self.driver.page_source
 
         self.driver.close()

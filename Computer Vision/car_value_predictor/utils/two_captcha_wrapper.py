@@ -17,8 +17,7 @@ class TwoCaptchaWrapper:
     '''
 
     def __init__(self):
-        self.api_key = '8d16924926a6e16813cc94bd2f0e847f'
-        print("api", os.getenv('TWO_CAPTCHA_API_KEY', None))
+        self.api_key = os.getenv('TWO_CAPTCHA_API_KEY', None)
         self.session = requests.Session()
 
     def post_image_task(self, file_path):
