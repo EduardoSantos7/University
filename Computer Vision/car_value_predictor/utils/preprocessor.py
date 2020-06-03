@@ -34,7 +34,7 @@ class Preprocessor:
         return result
 
     @staticmethod
-    def gray_blur_canny(image, kernel=(3, 3), canny_range=(10, 250), dialte_iter=1):
+    def gray_blur_canny(image, kernel=(2, 2), canny_range=(30, 255), dialte_iter=4):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.blur(gray, kernel)
         canny = cv2.Canny(gray, *canny_range)
