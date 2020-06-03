@@ -23,7 +23,7 @@ class QAgent:
 
     def process(self, episodes=2, gamma=0.99, alpha=0.01, epsilon=1.0, epsilon_decrease=.1, policy="e-greedy"):
 
-        self.init_q_tabe(path="q_table/q_learning/3x3/greedy_E_1999.pickle")
+        self.init_q_tabe(path="q_table/q_learning/3x3/greedy_E_19.pickle")
 
         for episode in range(episodes):
 
