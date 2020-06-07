@@ -1,196 +1,220 @@
-import numpy as np
-import keras.backend.tensorflow_backend as backend
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Conv2D, MaxPooling2D, Activation, Flatten
-from keras.optimizers import Adam
-from keras.callbacks import TensorBoard
-import tensorflow as tf
-from collections import deque
-import time
-import random
-from tqdm import tqdm
-import os
-from PIL import Image
-import cv2
+
 
 import gym
 import gym_maze
+from matplotlib import pyplot as plt
+from keras.layers import Dense, Activation
+from keras.models import Sequential, load_model
+from keras.optimizers import Adam
+import numpy as np
+import time
 
 
-DISCOUNT = 0.99
-REPLAY_MEMORY_SIZE = 50  # How many last steps to keep for model training
-# Minimum number of steps in a memory to start training
-MIN_REPLAY_MEMORY_SIZE = 1_000
-MINIBATCH_SIZE = 64  # How many steps (samples) to use for training
-UPDATE_TARGET_EVERY = 2  # Terminal states (end of episodes)
-MODEL_NAME = '2x256'
-MIN_REWARD = -200  # For model save
-MEMORY_FRACTION = 0.20
-
-# Environment settings
-EPISODES = 20
-
-# Exploration settings
-epsilon = 1  # not a constant, going to be decayed
-EPSILON_DECAY = 0.99975
-MIN_EPSILON = 0.001
-
-#  Stats settings
-AGGREGATE_STATS_EVERY = 5  # episodes
-SHOW_PREVIEW = True
-
-GRID_SIZE = 3
-env = gym.make(f"maze-sample-{GRID_SIZE}x{GRID_SIZE}-v0")
+GRID_SIZE = 5
 
 
-# Agent class
-class DQNAgent:
-    def __init__(self):
+class ReplayBuffer(object):
+    def __init__(self, max_size, input_shape, n_actions, discrete=False):
+        self.mem_size = max_size
+        self.mem_cntr = 0
+        self.discrete = discrete
+        self.state_memory = np.zeros((self.mem_size, input_shape))
+        self.new_state_memory = np.zeros((self.mem_size, input_shape))
+        dtype = np.int8 if self.discrete else np.float32
+        self.action_memory = np.zeros((self.mem_size, n_actions), dtype=dtype)
+        self.reward_memory = np.zeros(self.mem_size)
+        self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
 
-        # Main model
-        self.model = self.create_model()
-
-        # Target network
-        self.target_model = self.create_model()
-        self.target_model.set_weights(self.model.get_weights())
-
-        # An array with last n steps for training
-        self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
-
-        # Used to count when to update target network with main network's weights
-        self.target_update_counter = 0
-
-    def create_model(self):
-        model = Sequential()
-
-        # OBSERVATION_SPACE_VALUES = (10, 10, 3) a 10x10 RGB image.
-        model.add(Dense(32, input_shape=(2,)))
-        model.add(Activation('relu'))
-
-        model.add(Dense(32))
-        model.add(Activation('relu'))
-
-        model.add(Dense(4))
-        model.add(Activation('linear'))
-
-
-        # ACTION_SPACE_SIZE = how many choices (9)
-        # model.add(Dense(env.ACTION_SPACE_SIZE, activation='linear'))
-
-        model.compile(loss="mse", optimizer=Adam(
-            lr=0.001), metrics=['accuracy'])
-        return model
-
-    # Adds step's data to a memory replay array
-    # (observation space, action, reward, new observation space, done)
-    def update_replay_memory(self, transition):
-        self.replay_memory.append(transition)
-
-    # Trains main network every step during episode
-    def train(self, terminal_state, step):
-
-        # Start training only if certain number of samples is already saved
-        if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
-            return
-
-        # Get a minibatch of random samples from memory replay table
-        minibatch = random.sample(self.replay_memory, MINIBATCH_SIZE)
-
-        # Get current states from minibatch, then query NN model for Q values
-        current_states = np.array([transition[0]
-                                   for transition in minibatch])
-        current_qs_list = self.model.predict(current_states)
-
-        # Get future states from minibatch, then query NN model for Q values
-        # When using target network, query it, otherwise main network should be queried
-        new_current_states = np.array(
-            [transition[3] for transition in minibatch])
-        future_qs_list = self.target_model.predict(new_current_states)
-
-        X = []
-        y = []
-
-        # Now we need to enumerate our batches
-        for index, (current_state, action, reward, new_current_state, done) in enumerate(minibatch):
-
-            # If not a terminal state, get new q from future states, otherwise set it to 0
-            # almost like with Q Learning, but we use just part of equation here
-            if not done:
-                max_future_q = np.max(future_qs_list[index])
-                new_q = reward + DISCOUNT * max_future_q
-            else:
-                new_q = reward
-
-            # Update Q value for given state
-            current_qs = current_qs_list[index]
-            current_qs[action] = new_q
-
-            # And append to our training data
-            X.append(current_state)
-            y.append(current_qs)
-
-        # Fit on all samples as one batch, log only on terminal state
-        self.model.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0,
-                       shuffle=False if terminal_state else None)
-
-        # Update target network counter every episode
-        if terminal_state:
-            self.target_update_counter += 1
-
-        # If counter reaches set value, update target network with weights of main network
-        if self.target_update_counter > UPDATE_TARGET_EVERY:
-            self.target_model.set_weights(self.model.get_weights())
-            self.target_update_counter = 0
-
-    # Queries main network for Q values given current observation space (environment state)
-    def get_qs(self, state):
-        return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
-
-
-agent = DQNAgent()
-
-# Iterate over episodes
-for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
-
-    # Restarting episode - reset episode reward and step number
-    episode_reward = 0
-    step = 1
-
-    # Reset environment and get initial state
-    current_state = env.reset()
-
-    # Reset flag and start iterating until episode ends
-    done = False
-    while not done:
-
-        # This part stays mostly the same, the change is to query a model for Q values
-        if np.random.random() > epsilon:
-            # Get action from Q table
-            action = np.argmax(agent.get_qs(current_state))
+    def store_transition(self, state, action, reward, state_, done):
+        index = self.mem_cntr % self.mem_size
+        self.state_memory[index] = state
+        self.new_state_memory[index] = state_
+        # store one hot encoding of actions, if appropriate
+        action = {'N': 0, 'E': 1, 'S': 2, 'W': 3}[action]
+        if self.discrete:
+            actions = np.zeros(self.action_memory.shape[1])
+            actions[action] = 1.0
+            self.action_memory[index] = actions
         else:
-            # Get random action
-            action = np.random.randint(0, 4)
+            self.action_memory[index] = action
+        self.reward_memory[index] = reward
+        self.terminal_memory[index] = 1 - done
+        self.mem_cntr += 1
 
-        action = ['N', 'E', 'S', 'W'][action]
-        new_state, reward, done, _ = env.step(action)
+    def sample_buffer(self, batch_size):
+        max_mem = min(self.mem_cntr, self.mem_size)
+        batch = np.random.choice(max_mem, batch_size)
 
-        # Transform new continous state to new discrete state and count reward
-        episode_reward += reward
+        states = self.state_memory[batch]
+        actions = self.action_memory[batch]
+        rewards = self.reward_memory[batch]
+        states_ = self.new_state_memory[batch]
+        terminal = self.terminal_memory[batch]
 
-        if SHOW_PREVIEW and not episode % AGGREGATE_STATS_EVERY:
-            env.render()
+        return states, actions, rewards, states_, terminal
+
+
+def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
+    model = Sequential([
+        Dense(fc1_dims, input_shape=(input_dims,)),
+        Activation('relu'),
+        Dense(fc2_dims),
+        Activation('relu'),
+        Dense(n_actions)])
+
+    model.compile(optimizer=Adam(lr=lr), loss='mse')
+
+    return model
+
+
+class DDQNAgent(object):
+    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size,
+                 input_dims, epsilon_dec=0.999995,  epsilon_end=0.0001,
+                 mem_size=1_000_000, fname='ddqn_model.h5', replace_target=100):
+        self.action_space = [i for i in range(n_actions)]
+        self.n_actions = n_actions
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.epsilon_dec = epsilon_dec
+        self.epsilon_min = epsilon_end
+        self.batch_size = batch_size
+        self.model_file = fname
+        self.replace_target = replace_target
+        self.memory = ReplayBuffer(mem_size, input_dims, n_actions,
+                                   discrete=True)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 8, 8)
+        self.q_target = build_dqn(alpha, n_actions, input_dims, 8, 8)
+
+    def remember(self, state, action, reward, new_state, done):
+        self.memory.store_transition(state, action, reward, new_state, done)
+
+    def choose_action(self, state):
+        state = state[np.newaxis, :]
+        rand = np.random.random()
+        if rand < self.epsilon:
+            action = np.random.choice(self.action_space)
+        else:
+            actions = self.q_eval.predict(state)
+            action = np.argmax(actions)
+
+        return action
+
+    def learn(self):
+        if self.memory.mem_cntr > self.batch_size:
+            state, action, reward, new_state, done = \
+                self.memory.sample_buffer(self.batch_size)
+
+            action_values = np.array(self.action_space, dtype=np.int8)
+            action_indices = np.dot(action, action_values)
+
+            q_next = self.q_target.predict(new_state)
+            q_eval = self.q_eval.predict(new_state)
+            q_pred = self.q_eval.predict(state)
+
+            max_actions = np.argmax(q_eval, axis=1)
+
+            q_target = q_pred
+
+            batch_index = np.arange(self.batch_size, dtype=np.int32)
+
+            q_target[batch_index, action_indices] = reward + \
+                self.gamma*q_next[batch_index, max_actions.astype(int)]*done
+
+            _ = self.q_eval.fit(state, q_target, verbose=0)
+
+            self.epsilon = self.epsilon*self.epsilon_dec if self.epsilon > \
+                self.epsilon_min else self.epsilon_min
+            if self.memory.mem_cntr % self.replace_target == 0:
+                self.update_network_parameters()
+
+    def update_network_parameters(self):
+        self.q_target.model.set_weights(self.q_eval.model.get_weights())
+
+    def save_model(self):
+        self.q_eval.save(self.model_file)
+
+    def load_model(self):
+        self.q_eval = load_model(self.model_file)
+        # if we are in evaluation mode we want to use the best weights for
+        # q_target
+        if self.epsilon == 0.0:
+            self.update_network_parameters()
+
+
+def plotLearning(x, scores, epsilons, filename, lines=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, label="1")
+    ax2 = fig.add_subplot(111, label="2", frame_on=False)
+
+    ax.plot(x, epsilons, color="C0")
+    ax.set_xlabel("Game", color="C0")
+    ax.set_ylabel("Epsilon", color="C0")
+    ax.tick_params(axis='x', colors="C0")
+    ax.tick_params(axis='y', colors="C0")
+
+    N = len(scores)
+    running_avg = np.empty(N)
+    for t in range(N):
+        running_avg[t] = np.mean(scores[max(0, t-20):(t+1)])
+
+    ax2.scatter(x, running_avg, color="C1")
+    #ax2.xaxis.tick_top()
+    ax2.axes.get_xaxis().set_visible(False)
+    ax2.yaxis.tick_right()
+    #ax2.set_xlabel('x label 2', color="C1")
+    ax2.set_ylabel('Score', color="C1")
+    #ax2.xaxis.set_label_position('top')
+    ax2.yaxis.set_label_position('right')
+    #ax2.tick_params(axis='x', colors="C1")
+    ax2.tick_params(axis='y', colors="C1")
+
+    if lines is not None:
+        for line in lines:
+            plt.axvline(x=line)
+
+    plt.savefig(filename)
+
+
+if __name__ == '__main__':
+    env = gym.make(f"maze-sample-{GRID_SIZE}x{GRID_SIZE}-v0")
+    ddqn_agent = DDQNAgent(alpha=0.001, gamma=0.97, n_actions=4, epsilon=1.0,
+                           batch_size=64, input_dims=2)
+    n_games = 3
+    ddqn_agent.load_model()
+    ddqn_scores = []
+    ddqn_averages = []
+    eps_history = []
+
+    for i in range(n_games):
+        done = False
+        score = 0
+        observation = env.reset()
+        while not done:
+            action = ddqn_agent.choose_action(observation)
+            action = ['N', 'E', 'S', 'W'][action]
+            observation_, reward, done, info = env.step(action)
+            score += reward
+            ddqn_agent.remember(observation, action, reward,
+                                observation_, int(done))
+            observation = observation_
+            ddqn_agent.learn()
+
             env.maze_view.update()
-            time.sleep(.01)
+            time.sleep(0.01)
 
-        # Every step we update replay memory and train main network
-        agent.update_replay_memory(
-            (current_state, action, reward, new_state, done))
-        agent.train(done, step)
+        eps_history.append(ddqn_agent.epsilon)
 
-        current_state = new_state
-        step += 1
+        ddqn_scores.append(score)
 
-    # Decay epsilon
-    if epsilon > MIN_EPSILON:
-        epsilon *= EPSILON_DECAY
-        epsilon = max(MIN_EPSILON, epsilon)
+        avg_score = np.mean(ddqn_scores[max(0, i-100):(i+1)])
+        ddqn_averages.append(avg_score)
+        print('episode: ', i, 'score: %.2f' % score,
+              ' average score %.2f' % avg_score, ' epsilon: %.2f' % ddqn_agent.epsilon)
+
+        if i % 5 == 0 and i > 0:
+            ddqn_agent.save_model()
+
+    filename = 'MAZE-ddqn.png'
+
+    x = [i+1 for i in range(n_games)]
+    plotLearning(x, ddqn_averages, eps_history, filename)
