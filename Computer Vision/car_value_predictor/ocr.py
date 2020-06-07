@@ -3,6 +3,7 @@ import pytesseract
 
 from utils.preprocessor import Preprocessor
 from utils.ocr.license import extract_license
+from car_detector import CarDetector
 import time
 
 from concurrent.futures import ProcessPoolExecutor, as_completed, wait
@@ -23,13 +24,13 @@ def get_license_plate(image_path, debug=True):
 
         epsilon = 0.09*cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, epsilon, True)
-        if area > 500 and debug:
+        if area > 4000 and debug:
             cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
             # show the output image
             cv2.imshow("Image", image)
             cv2.waitKey(0)
         # Process a rectangule
-        if len(approx) > 1 and area > 2000:
+        if len(approx) > 1 and area > 4000:
             x, y, w, h = cv2.boundingRect(c)
 
             aspect_ratio = float(w)/h
@@ -62,13 +63,14 @@ def orc(image, psm):
 def test_ocr():
     success = 0
     licenses = {
+        'chrysler': 'GZA-768-D',
         'dodge': 'TZR-38-08',
         'dodge2': 'TZR-38-08',
         'ford': 'XWL-82-13',
         'ford2': 'UAF-31-31',
         'ford3': 'UAF-31-31',
         'ford4': 'UAF-31-31',
-        'mazda': 'TZZ-97-38',
+        'mazda3': 'TZZ-97-38',
         'mazda2': 'TZZ-97-38',
         'nissan': 'XWH-61-96',
         'susuki': 'TPT-255-A',
@@ -79,7 +81,11 @@ def test_ocr():
     }
 
     for brand, license_plate in licenses.items():
-        text = get_license_plate(f'{brand}.jpg', debug=False)
+        img_path = f'images/{brand}.jpg'
+        out_path = "out.jpg"
+        # c = CarDetector()
+        # car_img = c.detect(img_path)
+        text = get_license_plate(img_path, debug=False)
         detected = text.replace(' ', '').replace('\n', '')
         print(detected, license_plate)
         if detected == license_plate:
