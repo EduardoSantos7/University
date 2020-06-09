@@ -13,7 +13,7 @@ from .parser import Parser
 
 
 @csrf_exempt
-def detect(request):
+def get_details(request):
     # initialize the data dictionary to be returned by the request
     data = {"success": False}
     # check to see if this is a post request
@@ -27,6 +27,8 @@ def detect(request):
         parser = Parser(html)
         parser.process()
         datails = parser.data
+
+        print("aqui")
 
         data["details"] = datails
         data["success"] = True if datails else False

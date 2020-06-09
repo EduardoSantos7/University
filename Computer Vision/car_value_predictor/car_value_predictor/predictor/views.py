@@ -1,7 +1,4 @@
 from django.shortcuts import render
-from .utils.preprocessor import Preprocessor
-from .color import get_color
-from .car_detector import CarDetector
 
 # Create your views here.
 # import the necessary packages
@@ -11,44 +8,29 @@ import numpy as np
 import urllib
 import json
 import cv2
+from .linear_model import predict
 
 
 @csrf_exempt
-def detect_color(request):
+def get_prediction(request):
     # initialize the data dictionary to be returned by the request
     data = {"success": False}
-    print(request)
+    car = []
     # check to see if this is a post request
     if request.method == "POST":
-        # check to see if an image was uploaded
-        if request.FILES.get("image", None) is not None:
-            # grab the uploaded image
-            image = _grab_image(stream=request.FILES["image"])
-        # if the input it's a path
-        if request.POST.get("path", None):
-            image = request.POST.get("path", None)
-            image = f"color_detector/{image}"
-        # otherwise, assume that a URL was passed in
-        else:
-            # grab the URL from the request
-            url = request.POST.get("url", None)
-            # if the URL is None, then return an error
-            if url is None:
-                data["error"] = "No URL provided."
-                return JsonResponse(data)
-            # load the image and convert
-            image = _grab_image(url=url)
+        if request.POST.get("model_year", ""):
+            print("aqui")
 
-        print("K E LO K E")
-        c = CarDetector()
+            model_year = (request.POST.get("model_year", 2000))
+            model = request.POST.get("model", "")
+            km = (request.POST.get("km", 10000))
+            brand = request.POST.get("brand", "")
+            car = [model_year, km, brand, model]
 
-        box = c.detect(image)
-        img = cv2.imread(image)
-        car_focus = Preprocessor.crop_image(img, box)
-        color = get_color(car_focus)
+        value = predict(car)
 
-        data["color"] = color
-        data["success"] = True if color else False
+        data["value"] = value[0]
+        data["success"] = True if value else False
     # return a JSON response
     return JsonResponse(data)
 

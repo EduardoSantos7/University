@@ -10,7 +10,7 @@ import urllib
 import json
 import cv2
 @csrf_exempt
-def detect(request):
+def get_license(request):
     # initialize the data dictionary to be returned by the request
     data = {"success": False}
     # check to see if this is a post request

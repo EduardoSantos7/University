@@ -15,16 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from license_detector.views import detect
-from color_detector.views import detect
-from car_details.views import detect
-from car_value.views import detect
+from license_detector.views import get_license
+from color_detector.views import detect_color
+from car_details.views import get_details
+from predictor.views import get_prediction
 
 
 urlpatterns = [
-    path('license_detection/detect/', detect),
-    path('color_detection/detect/', detect),
-    path('car_details/detect/', detect),
-    path('car_value/detect/', detect),
+    path('license_detection/detect/', get_license),
+    path('color_detection/detect_color/', detect_color),
+    path('car_details/detect/', get_details),
+    path('predictor/detect/', get_prediction),
     path('admin/', admin.site.urls),
 ]
