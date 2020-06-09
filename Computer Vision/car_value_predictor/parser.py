@@ -43,6 +43,10 @@ class Parser():
             data[field] = value
 
         self.data = self.standarize_data(data)
+        self.data['ocra_msg'] = ocra.text
+        self.data['pgj_msg'] = pgj.text
+        self.data['status'] = self.soup.find(
+            'td', {'class': 'alert alert-success'}).text
 
     def standarize_data(self, data_dict):
         enrolled_date = f'{data_dict.get("Fecha de inscripción", "")} {data_dict.get("Hora de inscripción", "")}'

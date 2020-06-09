@@ -3,6 +3,7 @@ import datetime
 
 import cv2
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 from utils.two_captcha_wrapper import TwoCaptchaWrapper
 from PIL import Image
@@ -14,6 +15,8 @@ DRIVER_PATH = '/Users/reysantos7/Desktop/University/University/Computer Vision/c
 
 class Crawler:
     def __init__(self):
+        # options = Options()
+        # options.add_argument('-headless')
         self.driver = webdriver.Firefox(executable_path=DRIVER_PATH)
         self.IDS = {
             'license_input': 'search_field',

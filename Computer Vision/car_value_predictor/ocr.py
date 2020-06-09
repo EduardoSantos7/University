@@ -94,4 +94,4 @@ def test_ocr():
     print(f'Average: {success/len(licenses.keys())}') 
 
 
-test_ocr()
+#test_ocr()

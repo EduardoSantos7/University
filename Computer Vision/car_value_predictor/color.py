@@ -4,6 +4,7 @@ import numpy as np
 import imutils
 from collections import OrderedDict
 from utils.preprocessor import Preprocessor
+from car_detector import CarDetector
 
 
 class ColorDetector:
@@ -13,9 +14,10 @@ class ColorDetector:
         # name as the key and the RGB tuple as the value
         colors = OrderedDict({
             "black": (10, 10, 10),
+            "orange": (255, 150, 0),
             "gray": (120, 120, 120),
             "white": (220, 220, 220),
-            "red": (200, 30, 30),
+            "red": (190, 50, 50),
             "green": (30, 210, 30),
             "blue": (30, 30, 210)})
         # allocate memory for the L*a*b* image, then initialize
@@ -54,8 +56,11 @@ class ColorDetector:
 
 cl = ColorDetector()
 
+
 def get_color(image_path):
-    image = cv2.imread(image_path)
+    if type(image_path) == str:
+        image = cv2.imread(image_path)
+    image = image_path
     resized = cv2.resize(image, (800, 800))
     image = cv2.resize(image, (800, 800))
     ratio = image.shape[0] / float(resized.shape[0])
@@ -72,7 +77,7 @@ def get_color(image_path):
         approx = cv2.approxPolyDP(c, epsilon, True)
         # Process a rectangule
 
-        if len(approx) <= 4 and area > 2_000 and area < 15_000:
+        if area > 2_000 and area < 15_000:
             x, y, w, h = cv2.boundingRect(c)
 
             M = cv2.moments(c)
@@ -100,4 +105,10 @@ def get_color(image_path):
 
     return ""
 
-print(get_color("ford4.jpg"))
+c = CarDetector()
+img_path = "images/ford2.jpg"
+box = c.detect(img_path)
+img = cv2.imread(img_path)
+print(box)
+car_focus = Preprocessor.crop_image(img, box)
+print(get_color(car_focus))

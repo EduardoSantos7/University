@@ -40,3 +40,7 @@ class Preprocessor:
         canny = cv2.Canny(gray, *canny_range)
         canny = cv2.dilate(canny, None, iterations=dialte_iter)
         return gray, canny
+
+    @staticmethod
+    def crop_image(image, box):
+        return image[box.get('top', 0):box.get('bottom', 0), box.get('left', 0): box.get('right', 0)]
