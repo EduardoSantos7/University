@@ -9,3 +9,4 @@
 *.tar*
 .env
 geckodriver
+*/node_modules

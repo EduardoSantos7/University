@@ -10,9 +10,16 @@ from concurrent.futures import ProcessPoolExecutor, as_completed, wait
 
 
 def get_license_plate(image_path, debug=False):
-    image = cv2.imread(image_path)
+
+    if type(image_path) == str:
+        # Read in grayscale
+        image = cv2.imread(image_path)
+    else:
+        image = image_path
+    # image = cv2.imread(image_path)
     image = cv2.resize(image, (800, 800))
-    gray, canny = Preprocessor.gray_blur_canny(image, kernel=(4, 4), canny_range=(10, 300))
+    gray, canny = Preprocessor.gray_blur_canny(
+        image, kernel=(4, 4), canny_range=(10, 300))
     text_freq = {}
     license_plate = ""
 
@@ -39,17 +46,20 @@ def get_license_plate(image_path, debug=False):
                 placa = gray[y:y+h, x:x+w]
                 with ProcessPoolExecutor() as executor:
                     psms = ['--psm 7', '--psm 6', '--psm 11', '--psm 13']
-                    results = [executor.submit(orc, placa, psm) for psm in psms]
+                    results = [executor.submit(orc, placa, psm)
+                               for psm in psms]
 
                     for f in as_completed(results):
                         license_plate = extract_license(f.result())
                         # print(f.result(), "l ", license_plate, area, aspect_ratio, len(approx))
                         if license_plate:
-                            text_freq[license_plate] = text_freq.get(license_plate, 0) + 1
+                            text_freq[license_plate] = text_freq.get(
+                                license_plate, 0) + 1
                             if debug:
                                 cv2.rectangle(
                                     image, (x, y), (x + w, y + h), (0, 255, 0), 3)
-                                cv2.putText(image, license_plate, (x - 20, y - 10), 1, 2.2, (0, 255, 0), 3)
+                                cv2.putText(
+                                    image, license_plate, (x - 20, y - 10), 1, 2.2, (0, 255, 0), 3)
                 if text_freq:
                     license_plate = max(text_freq, key=text_freq.get)
 
@@ -91,7 +101,7 @@ def test_ocr():
         if detected == license_plate:
             success += 1
 
-    print(f'Average: {success/len(licenses.keys())}') 
+    print(f'Average: {success/len(licenses.keys())}')
 
 
 # test_ocr()

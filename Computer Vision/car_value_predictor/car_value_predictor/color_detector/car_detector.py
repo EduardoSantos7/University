@@ -5,7 +5,8 @@ import cv2
 class CarDetector():
 
     def __init__(self):
-        self.car_back_path = os.path.join('color_detector', 'images', 'templates', 'placa.jpg')
+        self.car_back_path = os.path.join(
+            'color_detector', 'images', 'templates', 'placa.jpg')
         self.car_front_path = os.path.join(
             'color_detector', 'images', 'templates', 'placa.jpeg')
 
@@ -19,8 +20,11 @@ class CarDetector():
         return car_front if front_d < back_d else car_back
 
     def detect(self, image_path):
-        # Read in grayscale
-        image = cv2.imread(image_path, 0)
+        if type(image_path) == str:
+            # Read in grayscale
+            image = cv2.imread(image_path, 0)
+        else:
+            image = cv2.cvtColor(image_path, cv2.COLOR_BGR2GRAY)
 
         # Detect if the input is the front/back face of the car
         template_image = self.check_face(image)

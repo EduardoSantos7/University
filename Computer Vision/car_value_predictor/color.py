@@ -54,6 +54,7 @@ class ColorDetector:
         # return the name of the color with the smallest distance
         return self.colorNames[minDist[1]]
 
+
 cl = ColorDetector()
 
 
@@ -105,8 +106,9 @@ def get_color(image_path):
 
     return ""
 
+
 c = CarDetector()
-img_path = "images/ford2.jpg"
+img_path = "images/ford.jpg"
 box = c.detect(img_path)
 img = cv2.imread(img_path)
 print(box)

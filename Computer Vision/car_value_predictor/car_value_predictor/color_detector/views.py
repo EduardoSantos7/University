@@ -17,15 +17,17 @@ import cv2
 def detect_color(request):
     # initialize the data dictionary to be returned by the request
     data = {"success": False}
-    print(request)
+
     # check to see if this is a post request
     if request.method == "POST":
+
         # check to see if an image was uploaded
         if request.FILES.get("image", None) is not None:
             # grab the uploaded image
             image = _grab_image(stream=request.FILES["image"])
+
         # if the input it's a path
-        if request.POST.get("path", None):
+        elif request.POST.get("path", None):
             image = request.POST.get("path", None)
             image = f"color_detector/{image}"
         # otherwise, assume that a URL was passed in
@@ -39,12 +41,15 @@ def detect_color(request):
             # load the image and convert
             image = _grab_image(url=url)
 
-        print("K E LO K E")
         c = CarDetector()
 
         box = c.detect(image)
-        img = cv2.imread(image)
-        car_focus = Preprocessor.crop_image(img, box)
+
+        if type(image) == str:
+            # Read in grayscale
+            image = cv2.imread(image, 0)
+
+        car_focus = Preprocessor.crop_image(image, box)
         color = get_color(car_focus)
 
         data["color"] = color
@@ -56,15 +61,18 @@ def detect_color(request):
 def _grab_image(path=None, stream=None, url=None):
     # if the path is not None, then load the image from disk
     if path is not None:
+        print("entre1")
         image = cv2.imread(path)
     # otherwise, the image does not reside on disk
     else:
+        print("entre2")
         # if the URL is not None, then download the image
         if url is not None:
             resp = urllib.urlopen(url)
             data = resp.read()
         # if the stream is not None, then the image has been uploaded
         elif stream is not None:
+            print("entre3")
             data = stream.read()
         # convert the image to a NumPy array and then read it into
         # OpenCV format

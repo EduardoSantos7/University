@@ -16,22 +16,24 @@ from .parser import Parser
 def get_details(request):
     # initialize the data dictionary to be returned by the request
     data = {"success": False}
+    license_plate = ""
     # check to see if this is a post request
     if request.method == "POST":
+        print(request.POST)
         if request.POST.get("license_plate", ""):
             license_plate = request.POST.get("license_plate", None)
 
-        crawler = Crawler()
-        html = crawler.crawl(license_plate)
+            crawler = Crawler()
+            html = crawler.crawl(license_plate)
 
-        parser = Parser(html)
-        parser.process()
-        datails = parser.data
+            parser = Parser(html)
+            parser.process()
+            datails = parser.data
 
-        print("aqui")
+            print("aqui")
 
-        data["details"] = datails
-        data["success"] = True if datails else False
+            data["details"] = datails
+            data["success"] = True if datails else False
     # return a JSON response
     return JsonResponse(data)
 

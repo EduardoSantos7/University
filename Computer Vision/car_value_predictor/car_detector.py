@@ -41,7 +41,7 @@ class CarDetector():
 
         cropped = image[top:bottom, left: right]
         return {'top': top, 'bottom': bottom, 'left': left, 'right': right}
-        # cv2.imwrite("out.jpg", cropped)
+        #cv2.imwrite("out.jpg", cropped)
 
     def detect_from_top(self, image, template):
         sum_ = 0
@@ -117,5 +117,6 @@ class CarDetector():
                 break
         return width
 
-# c = CarDetector()
-# c.detect("images/ford2.jpg")
+
+c = CarDetector()
+c.detect("images/ford.jpg")

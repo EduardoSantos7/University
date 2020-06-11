@@ -18,6 +18,7 @@ def get_prediction(request):
     car = []
     # check to see if this is a post request
     if request.method == "POST":
+        print(request.POST)
         if request.POST.get("model_year", ""):
             print("aqui")
 

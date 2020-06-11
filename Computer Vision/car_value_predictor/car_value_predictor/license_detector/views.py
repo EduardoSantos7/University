@@ -20,7 +20,7 @@ def get_license(request):
             # grab the uploaded image
             image = _grab_image(stream=request.FILES["image"])
         # if the input it's a path
-        if request.POST.get("path", None):
+        elif request.POST.get("path", None):
             image = request.POST.get("path", None)
             image = f"license_detector/{image}"
         # otherwise, assume that a URL was passed in
